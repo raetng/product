@@ -41,3 +41,4 @@ app.post('/products', async (req, res) => {
 app.listen(PORT, () => console.log(`product-service running on port ${PORT}`));
 
 module.exports = app;
+// hotfix applied
