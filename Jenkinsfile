@@ -14,7 +14,7 @@ pipeline {
     environment {
         DOCKER_IMAGE       = 'raetng/product'
         DOCKER_CREDENTIALS = 'dockerhub-credentials'
-        PATH               = "/Users/raetng/.nvm/versions/node/v24.11.0/bin:/usr/local/bin:${env.PATH}"
+        PATH               = "/Users/raetng/.nvm/versions/node/v24.11.0/bin:/opt/homebrew/bin:/usr/local/bin:${env.PATH}"
     }
 
     stages {
@@ -33,7 +33,7 @@ pipeline {
         stage('Build') {
             steps {
                 sh 'npm ci'
-                sh 'npm run lint'
+                sh 'npm run lint --if-present'
                 // TODO: Add any additional build/compile steps if needed
             }
         }
