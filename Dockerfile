@@ -22,6 +22,9 @@ FROM node:20-alpine AS production
 ENV NODE_ENV=production
 WORKDIR /app
 
+# Patch Alpine OS-level vulnerabilities
+RUN apk update && apk upgrade --no-cache
+
 # Copy manifests and install production deps only
 COPY package*.json ./
 RUN npm ci --omit=dev && npm cache clean --force
