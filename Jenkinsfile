@@ -60,13 +60,17 @@ pipeline {
             }
             steps {
                 script {
-                    def threshold = (env.DEPLOY_NAMESPACE == 'staging' || env.DEPLOY_NAMESPACE == 'prod') ? 'HIGH' : 'CRITICAL'
-                    def tfvars = [dev: 'dev.tfvars', staging: 'staging.tfvars', prod: 'prod.tfvars']
-                    iacSecurityScan(
-                        terraformDir: 'infrastructure/terraform',
-                        severityThreshold: threshold,
-                        tfvarsFile: tfvars[env.DEPLOY_NAMESPACE] ?: ''
-                    )
+                    if (fileExists('infrastructure/terraform')) {
+                        def threshold = (env.DEPLOY_NAMESPACE == 'staging' || env.DEPLOY_NAMESPACE == 'prod') ? 'HIGH' : 'CRITICAL'
+                        def tfvars = [dev: 'dev.tfvars', staging: 'staging.tfvars', prod: 'prod.tfvars']
+                        iacSecurityScan(
+                            terraformDir: 'infrastructure/terraform',
+                            severityThreshold: threshold,
+                            tfvarsFile: tfvars[env.DEPLOY_NAMESPACE] ?: ''
+                        )
+                    } else {
+                        echo 'No Terraform directory found in this repo — skipping IaC scan.'
+                    }
                 }
             }
         }
