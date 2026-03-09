@@ -102,7 +102,8 @@ pipeline {
             }
             steps {
                 script {
-                    dockerPush(imageName: DOCKER_IMAGE, tag: env.IMAGE_TAG, credentialsId: DOCKER_CREDENTIALS)
+                    def mutableTag = resolveEnvTag()
+                    dockerPush(imageName: DOCKER_IMAGE, tag: env.IMAGE_TAG, credentialsId: DOCKER_CREDENTIALS, envTag: mutableTag)
                 }
             }
         }
@@ -194,6 +195,18 @@ def resolveNamespace() {
 
     if (branch == 'main' || branch == 'master') {
         return 'prod'
+    } else if (branch.startsWith('release/')) {
+        return 'staging'
+    } else {
+        return 'dev'
+    }
+}
+
+def resolveEnvTag() {
+    def branch = env.GIT_BRANCH_NAME
+
+    if (branch == 'main' || branch == 'master') {
+        return 'latest'
     } else if (branch.startsWith('release/')) {
         return 'staging'
     } else {
