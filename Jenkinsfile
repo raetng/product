@@ -50,6 +50,27 @@ pipeline {
             }
         }
 
+        stage('IaC Security Scan') {
+            when {
+                anyOf {
+                    branch 'develop'
+                    branch pattern: 'release/*', comparator: 'GLOB'
+                    branch 'main'
+                }
+            }
+            steps {
+                script {
+                    def threshold = (env.DEPLOY_NAMESPACE == 'staging' || env.DEPLOY_NAMESPACE == 'prod') ? 'HIGH' : 'CRITICAL'
+                    def tfvars = [dev: 'dev.tfvars', staging: 'staging.tfvars', prod: 'prod.tfvars']
+                    iacSecurityScan(
+                        terraformDir: 'infrastructure/terraform',
+                        severityThreshold: threshold,
+                        tfvarsFile: tfvars[env.DEPLOY_NAMESPACE] ?: ''
+                    )
+                }
+            }
+        }
+
         stage('Container Build') {
             steps {
                 script {
@@ -133,7 +154,7 @@ pipeline {
 
     post {
         always {
-            archiveArtifacts artifacts: '**/trivy-report-*.json,**/trivy-report-*.txt,**/gitleaks-report.json,**/test-results/**', allowEmptyArchive: true
+            archiveArtifacts artifacts: '**/trivy-report-*.json,**/trivy-report-*.txt,**/gitleaks-report.json,**/tfsec-report*.json,**/tfsec-report*.txt,**/test-results/**', allowEmptyArchive: true
             cleanWs()
         }
         failure {
@@ -153,6 +174,9 @@ def resolveImageTag() {
         def version = readFile('VERSION').trim()
         return "v${version}"
     } else if (branch.startsWith('release/')) {
+        // Auto-write VERSION from branch name (e.g., release/1.1.0 → 1.1.0)
+        def version = branch.replaceFirst(/^release\//, '')
+        writeFile file: 'VERSION', text: version
         return "rc-${env.GIT_COMMIT_SHORT}"
     } else if (env.CHANGE_ID) {
         return "pr-${env.CHANGE_ID}-${env.GIT_COMMIT_SHORT}"

@@ -1,0 +1,21 @@
+# npm-internal dependencies bundled with Node runtime
+# These are not used by application code at runtime
+# They will be resolved when the Node base image is updated
+
+# cross-spawn (npm internal)
+CVE-2024-21538
+
+# glob (npm internal)
+CVE-2025-64756
+
+# minimatch (npm internal)
+CVE-2026-26996
+CVE-2026-27903
+CVE-2026-27904
+
+# tar (npm internal)
+CVE-2026-23745
+CVE-2026-23950
+CVE-2026-24842
+CVE-2026-26960
+CVE-2026-29786
