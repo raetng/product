@@ -7,10 +7,6 @@ pipeline {
         timeout(time: 60, unit: 'MINUTES')
     }
 
-    triggers {
-        pollSCM('* * * * *') // every 1 minute for demo; use webhook in production
-    }
-
     environment {
         DOCKER_IMAGE       = 'raetng/product'
         DOCKER_CREDENTIALS = 'dockerhub-credentials'
