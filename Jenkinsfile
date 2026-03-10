@@ -26,6 +26,31 @@ pipeline {
             }
         }
 
+        stage('Prepare Release') {
+            when {
+                branch pattern: 'release/*', comparator: 'GLOB'
+            }
+            steps {
+                script {
+                    def version = env.GIT_BRANCH_NAME.replaceFirst(/^release\//, '')
+                    def currentVersion = fileExists('VERSION') ? readFile('VERSION').trim() : ''
+                    if (currentVersion != version) {
+                        echo "Updating VERSION from '${currentVersion}' to '${version}'"
+                        writeFile file: 'VERSION', text: version
+                        sh """
+                            git config user.email "jenkins@localhost"
+                            git config user.name "Jenkins CI"
+                            git add VERSION
+                            git commit -m "chore: bump VERSION to ${version}"
+                            git push origin HEAD:${env.GIT_BRANCH_NAME}
+                        """
+                        env.GIT_COMMIT_SHORT = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+                        env.IMAGE_TAG = "rc-${env.GIT_COMMIT_SHORT}"
+                    }
+                }
+            }
+        }
+
         stage('Build') {
             steps {
                 sh 'npm ci'
@@ -175,9 +200,6 @@ def resolveImageTag() {
         def version = readFile('VERSION').trim()
         return "v${version}"
     } else if (branch.startsWith('release/')) {
-        // Auto-write VERSION from branch name (e.g., release/1.1.0 → 1.1.0)
-        def version = branch.replaceFirst(/^release\//, '')
-        writeFile file: 'VERSION', text: version
         return "rc-${env.GIT_COMMIT_SHORT}"
     } else if (env.CHANGE_ID) {
         return "pr-${env.CHANGE_ID}-${env.GIT_COMMIT_SHORT}"
