@@ -45,3 +45,4 @@ npm run test:ci  # single-run with coverage (used in CI)
 - Node.js 18, Express 4
 - pg (node-postgres)
 - Jest for testing
+test
