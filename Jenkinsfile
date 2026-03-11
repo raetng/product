@@ -115,6 +115,10 @@ pipeline {
                         manifestPath: "k8s/product/",
                         imageTag: env.IMAGE_TAG
                     )
+                    prometheusVerify(
+                        serviceName: 'product',
+                        namespace: 'dev'
+                    )
                 }
             }
         }
@@ -129,6 +133,10 @@ pipeline {
                         namespace: 'staging',
                         manifestPath: "k8s/product/",
                         imageTag: env.IMAGE_TAG
+                    )
+                    prometheusVerify(
+                        serviceName: 'product',
+                        namespace: 'staging'
                     )
                 }
             }
